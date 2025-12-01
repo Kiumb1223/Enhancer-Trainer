@@ -136,6 +136,8 @@ def main(config:OmegaConf):
             logger.info('Start to evaluation.')
             psnr_lst = [] 
             ssim_lst = [] 
+            loss_lst = [] 
+
             with torch.no_grad():
                 for cur_iter,(damage,gt) in enumerate(val_dataloader):
 
@@ -153,7 +155,7 @@ def main(config:OmegaConf):
                     ssim = calc_ssim(pred,gt).item()
                     psnr_lst.append(psnr)
                     ssim_lst.append(ssim)
-
+                    loss_lst.append(total_loss.item())
                     # 记录实验数据
                     writer.add_scalar('Eval/mse_loss',loss_dict['mse'].item(),global_cur_iter)
                     writer.add_scalar('Eval/ssim_loss',loss_dict['ssim'].item(),global_cur_iter)
@@ -163,7 +165,7 @@ def main(config:OmegaConf):
                     writer.add_scalar('Eval/psnr',psnr,global_cur_iter)
                     writer.add_scalar('Eval/ssim',ssim,global_cur_iter)
 
-            logger.info(f'Evalation:[{cur_ep}],PSNR:[{np.mean(psnr_lst):.3f}], SSIM:[{np.mean(ssim_lst):.3f}].')
+            logger.info(f'Evalation:[{cur_ep}], Mean Loss:[{np.mean(loss_lst):.3f}], PSNR:[{np.mean(psnr_lst):.3f}], SSIM:[{np.mean(ssim_lst):.3f}].')
 
             writer.add_image('grid/pred',
                 vutils.make_grid(pred, normalize=True, scale_each=True),
