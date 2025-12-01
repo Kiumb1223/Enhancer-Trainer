@@ -144,7 +144,7 @@ def main(config:OmegaConf):
                     damage = damage.to(config.exp.device)
                     gt = gt.to(config.exp.device)
 
-                    pred = net(damage)
+                    pred,gate = net(damage)
 
                     # 损失计算 
                     total_loss , loss_dict = loss(pred,gt)
