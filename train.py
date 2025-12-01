@@ -114,6 +114,12 @@ def main(config:OmegaConf):
             optimizer.step()
             scheduler.step()
 
+            # 记录实验数据
+            writer.add_scalar('Train/mse_loss',loss_dict['mse'].item(),global_cur_iter)
+            writer.add_scalar('Train/ssim_loss',loss_dict['ssim'].item(),global_cur_iter)
+            writer.add_scalar('Train/perceptual_loss',loss_dict['perceptual'].item(),global_cur_iter)
+            writer.add_scalar('Train/total_loss',loss_dict['total'].item(),global_cur_iter)
+
             logger.info(f'Epoch:[{cur_ep}][{cur_iter}/{total_iters_per_ep_train}], Loss:[{total_loss.item():.3f}].')
 
         # 保存模型权重
@@ -123,13 +129,7 @@ def main(config:OmegaConf):
 
             logger.info(f"Model checkpoints saved at {ckpt_dir + os.sep + f'model_epoch_{ global_cur_iter :d}.pth'}.")
 
-        # 记录实验数据
-        writer.add_scalar('Train/mse_loss',loss_dict['mse'].item(),global_cur_iter)
-        writer.add_scalar('Train/ssim_loss',loss_dict['ssim'].item(),global_cur_iter)
-        writer.add_scalar('Train/perceptual_loss',loss_dict['perceptual'].item(),global_cur_iter)
-        writer.add_scalar('Train/total_loss',loss_dict['total'].item(),global_cur_iter)
 
-        
         # 验证阶段
         if (cur_ep + 1) % config.exp.val_epoch == 0:
 
