@@ -1,0 +1,43 @@
+# --------------------------------
+# 实验配置
+exp:
+  seed: 3407
+  device: 'cuda:1'
+  exp_dir: './exps'
+  lr: 1e-4
+  momentum: 0.937
+  lr_decay: 5e-5
+
+  gamma: 0.98
+
+  batch_size: 16
+  num_workers: 8
+  warmup_iter: 5000
+  max_epoch: 20
+  save_model_interval: 5 
+  
+  val_epoch: 3 
+
+
+# --------------------------------
+# 数据集配置
+dataset:
+  train_txt_path: 'datasets/train.txt'
+  val_txt_path: 'datasets/val.txt'
+  input_shape: [384,384]
+
+
+# --------------------------------
+# 损失权重
+loss:
+  lam_mse: 1.
+  lam_ssim: 1.
+  lam_perceptual: 1.
+
+# --------------------------------
+defaults:
+  # 记录模型权重路径
+  - enhancer: basic
+  # 让Hydra不切换工作目录
+  - hydra: hydra
+  - _self_ 
