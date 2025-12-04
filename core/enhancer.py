@@ -24,7 +24,7 @@ class Enhancer(nn.Module):
     def __init__(
             self,
             type: str, # optional single,multi
-            num_layers: int,
+            num_dip: int,
             encoder: OmegaConf,
             gdip: OmegaConf,
             **kwargs
@@ -34,15 +34,15 @@ class Enhancer(nn.Module):
         assert type in ['single','multi']
 
         if type == 'single':
-            assert num_layers == 1, 'single type only support one layer'
+            assert num_dip == 1, 'single type only support one layer'
 
         self.type = type 
-        self.num_layers = num_layers        
+        self.num_layers = num_dip        
 
         self.vision_encoder = VisionEncoder(**encoder)
 
         if self.type == 'multi':
-            for i in range(num_layers):
+            for i in range(num_dip):
                 self.add_module(
                     f'gdip_{i}',GatedDIP(**gdip)
                 )

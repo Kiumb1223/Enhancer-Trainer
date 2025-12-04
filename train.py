@@ -21,8 +21,8 @@ from utils.dataset import CddDataset
 from torch.utils.data import DataLoader
 from utils.metric import calc_psnr,calc_ssim
 from torch.utils.tensorboard import SummaryWriter
-from utils.misc import set_random_seed,get_model_info
 from torch.optim.lr_scheduler import LambdaLR,ExponentialLR
+from utils.misc import set_random_seed,get_model_info,get_exp_info
 
 os.environ['HYDRA_FULL_ERROR'] = '1'
 logger = logging.getLogger(__name__)
@@ -48,6 +48,9 @@ def main(config:OmegaConf):
 
     # 固定随机种子
     set_random_seed(config.exp.seed)
+
+    # 实验配置打印
+    logger.info("Config info:\n" + get_exp_info(config))
 
     # ----------------------
     # 2. 模型配置

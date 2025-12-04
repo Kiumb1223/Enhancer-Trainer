@@ -192,11 +192,11 @@ class GatedDIP(torch.nn.Module):
 
         gate = self.tanh_range(self.gate_module(linear_proj),0.01,1.0)
 
-        identity_out = self.identity(x,gate[:,0])
-        bezier_out = self.bezier(x,linear_proj,gate[:,1])
-        kernel_out = self.kernel(x,linear_proj,gate[:,2])
+        # identity_out = self.identity(x,gate[:,0])
+        bezier_out = self.bezier(x,linear_proj,gate[:,0])
+        kernel_out = self.kernel(x,linear_proj,gate[:,1])
 
-        x = identity_out + bezier_out + kernel_out
-        x = (x-x.min())/(x.max()-x.min())
+        x = bezier_out + kernel_out
+        x = torch.clamp(x,0.0,1.0)
 
         return x,gate
