@@ -2,8 +2,8 @@
 # 实验配置
 exp:
   seed: 3407
-  device: 'cuda:1'
-  exp_dir: './exps'
+  device: 'cuda:0'
+  exp_dir: './exps/new_data_loss_append_sigmoid_softmax_new_RESI'
   lr: 1e-4
   momentum: 0.937
   lr_decay: 5e-5
@@ -12,27 +12,30 @@ exp:
 
   batch_size: 16
   num_workers: 8
-  warmup_iter: 5000
-  max_epoch: 20
+
+  max_epoch: 60
   save_model_interval: 5 
   
-  val_epoch: 3 
+  val_epoch: 5 
 
 
 # --------------------------------
 # 数据集配置
 dataset:
-  train_txt_path: 'datasets/train.txt'
-  val_txt_path: 'datasets/val.txt'
+  # train_txt_path: 'datasets/train.txt'
+  # val_txt_path: 'datasets/val.txt'
+  train_dir: 'datasets/CDD-11_train'
+  val_dir: 'datasets/CDD-11_test'
+  modes: ['haze','low','low_haze']
   input_shape: [384,384]
 
 
 # --------------------------------
 # 损失权重
 loss:
-  lam_mse: 1.
-  lam_ssim: 1.
-  lam_perceptual: 1.
+  lam_l1: 1.
+  lam_msssim: 1.
+  lam_con: 1.
 
 # --------------------------------
 defaults:
