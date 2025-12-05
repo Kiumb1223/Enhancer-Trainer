@@ -2,6 +2,8 @@
 
 > It contains the custom trainer designed specifically for the **Image Enhancer**, which is the core of my project [CDIE-Trainer](https://github.com/Kiumb1223/CDIE-Trainer).
 
+![teaser fig](.assets/teaser.png)
+
 ## Update
 
 1. 2025-12-05:  Improved DIP Architecture （PSNR 17.735，SSIM0.771):
