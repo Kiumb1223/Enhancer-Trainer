@@ -48,9 +48,9 @@ def main(config:OmegaConf):
 
     # 固定随机种子
     set_random_seed(config.exp.seed)
-
+    
     # 实验配置打印
-    logger.info("Config info:\n" + get_exp_info(config))
+    logger.info(f'Exp Config:\n' + get_exp_info(config))
 
     # ----------------------
     # 2. 模型配置

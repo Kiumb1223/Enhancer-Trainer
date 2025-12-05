@@ -3,15 +3,17 @@ type: "multi"  # optional: [single,multi]
 num_dip: 5
 
 encoder:
-  num_layers: 5   # dip的个数 并不一样和 encoder的层数相关
-
-  type: "vanilla"   # optional: vanilla star 
-  act_type: "lrelu" # optional: lrelu telu [only useful in the "vanilla" type]
-  use_afpn: False    # whether using AFPN to refine the features
+  type: 'vanilla'          # optional: [vanilla star]
+  num_layers: 5            # dip的个数 并不一样和 encoder的层数相关
+  act_type: "lrelu"        # optional: lrelu telu [only useful in the "vanilla" type] relu selu
+  use_pre_decoder: False   # whether using pre-decoder to more smoothly control the channels
+  use_afpn: False           # whether using AFPN to refine the features
   base_channel: 64
   encoder_output_dim: 256
+  
+
 
 gdip:
-  num_of_gates: 2 # Fixed params [identity & bezier & kernel]
-  kernel_size: 9  # hyparameter about kernel filter
+  num_of_gates: 3                  # Fixed params [identity & bezier & kernel]
+  kernel_size: 9           # hyparameter about kernel filter
   encoder_output_dim: ${enhancer.encoder.encoder_output_dim}

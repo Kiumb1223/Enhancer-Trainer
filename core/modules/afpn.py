@@ -12,20 +12,12 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from collections import OrderedDict
+from .basic import BasicConv
 
 __all__ = [
     'AFPN'
 ]
 
-def BasicConv(filter_in, filter_out, kernel_size, stride=1, pad=None):
-    if pad is None:
-        pad = (kernel_size - 1) // 2 if kernel_size else 0
-    return nn.Sequential(OrderedDict([
-        ("conv", nn.Conv2d(filter_in, filter_out, kernel_size, stride, pad, bias=False)),
-        ("bn", nn.BatchNorm2d(filter_out)),
-        ("relu", nn.ReLU(inplace=True)),
-    ]))
 
 
 class BasicBlock(nn.Module):
@@ -177,7 +169,7 @@ class AFPN(nn.Module):
         reduced = [c // 8 for c in in_channels]
         self.compress = nn.ModuleList([
             BasicConv(c_in, c_red, 1) for c_in, c_red in zip(in_channels, reduced)
-        ])
+        ]) # compress to 1/8 channels
         self.body = BlockBody(reduced)
         self.project = nn.ModuleList([
             BasicConv(c_red, out_channels, 1) for c_red in reduced

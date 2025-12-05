@@ -11,7 +11,7 @@
 
 import torch
 import torch.nn as nn
-from timm.models.layers import DropPath
+from timm.layers import DropPath
 
 __all__ = [ 
     'StarConv'
@@ -67,9 +67,11 @@ class Star_Block(nn.Module):
 
 
 class StarConv(nn.Module):
-    def __init__(self,in_channel,out_channel):
+    def __init__(self,in_channel,out_channel,kernel_size=3,stride=2,pad=None):
         super().__init__()
-        self.conv1 = nn.Conv2d(in_channel,out_channel,kernel_size=3,stride=1,padding=1)
+        if pad is None:
+            pad = (kernel_size - 1) // 2 if kernel_size else 0
+        self.conv1 = nn.Conv2d(in_channel,out_channel,kernel_size=kernel_size,stride=stride,padding=pad)
         self.star_block = Star_Block(out_channel,drop_path=0.1)
 
     def forward(self,x):

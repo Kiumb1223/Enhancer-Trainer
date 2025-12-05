@@ -2,15 +2,15 @@
 # 实验配置
 exp:
   seed: 3407
-  device: 'cuda:0'
-  exp_dir: './exps/new_data_loss_append_sigmoid_softmax_new_RESI'
+  device: 'cuda:1'
+  exp_dir: './exps/new_vis_encoder_softmax_wotanh_denoise'
   lr: 1e-4
   momentum: 0.937
   lr_decay: 5e-5
 
   gamma: 0.98
 
-  batch_size: 16
+  batch_size: 8
   num_workers: 8
 
   max_epoch: 60
