@@ -1,10 +1,9 @@
 type: "multi"  # optional: [single,multi]   
-num_dip: 5
-ckpt_path: null
+num_dip: 3
 
 encoder:
   dip_type: ${enhancer.type}
-  num_layers: 5            # dip的个数 并不一样和 encoder的层数相关
+  num_layers: 3            # dip的个数 并不一样和 encoder的层数相关
   use_pre_decoder: True   # whether using pre-decoder to more smoothly control the channels
   base_channel: 64
   encoder_output_dim: 256

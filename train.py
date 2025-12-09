@@ -12,14 +12,13 @@ import hydra
 import torch
 import logging
 import numpy as np 
-from core import build_enhancer 
 from omegaconf import OmegaConf
-from utils.loss import Criterion
 from torch.optim import Adam,SGD
 import torchvision.utils as vutils
-from utils.dataset import CddDataset
+from utils.dataset import CddDataset,VOCDataset
 from torch.utils.data import DataLoader
 from utils.metric import calc_psnr,calc_ssim
+from core import build_enhancer,build_dip_loss 
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import LambdaLR,ExponentialLR
 from utils.misc import set_random_seed,get_model_info,get_exp_info
@@ -48,9 +47,9 @@ def main(config:OmegaConf):
 
     # 固定随机种子
     set_random_seed(config.exp.seed)
-
+    
     # 实验配置打印
-    logger.info("Config info:\n" + get_exp_info(config))
+    logger.info(f'Exp Config:\n' + get_exp_info(config))
 
     # ----------------------
     # 2. 模型配置
@@ -61,20 +60,26 @@ def main(config:OmegaConf):
 
     logger.info("Enhancer Info:\n" + get_model_info(net))
     
-    loss = Criterion(**config.loss)
+    loss = build_dip_loss(config.enhancer.loss)
     loss.to(config.exp.device)
 
     # ----------------------
     # 3. 数据集配置
-    train_dataset = CddDataset(data_dir=config.dataset.train_dir,phase='Train',**config.dataset)
-    train_dataloader = DataLoader(
+    if config.dataset.dataset_name == 'cdd':
+        train_dataset = CddDataset(data_dir=config.dataset.train_dir,phase='train',**config.dataset)
+        val_dataset   = CddDataset(data_dir=config.dataset.val_dir,phase='val',**config.dataset)
+    else:
+        train_dataset = VOCDataset(txt_path=config.dataset.train_txt_path,phase='train',**config.dataset)
+        val_dataset   = VOCDataset(txt_path=config.dataset.val_txt_path,phase='val',**config.dataset)
+    
+    train_dataloader  = DataLoader(
                 train_dataset,
                 batch_size=config.exp.batch_size,
                 shuffle=True,
                 num_workers=config.exp.num_workers
         )
-    val_dataset = CddDataset(data_dir=config.dataset.val_dir,phase='val',**config.dataset)
-    val_dataloader = DataLoader(
+    
+    val_dataloader    = DataLoader(
                 val_dataset,
                 batch_size=config.exp.batch_size,
                 shuffle=False,
@@ -94,9 +99,8 @@ def main(config:OmegaConf):
 
     # ----------------------
     # 5. 训练
-
     global_cur_iter = 0 
-    val_epoch_cnt = 0 # 用于记录 val 的iteration
+    val_epoch_cnt   = 0 # 用于记录 val 的iteration
     total_iters_per_ep_train = len(train_dataset)  // config.exp.batch_size
     total_iters_per_ep_val   = len(val_dataset) // config.exp.batch_size
 
@@ -107,10 +111,10 @@ def main(config:OmegaConf):
             damage = damage.to(config.exp.device)
             gt = gt.to(config.exp.device)
 
-            pred,gate = net(damage)
+            pred_lst,gate = net(damage)
 
             # 损失计算
-            total_loss , loss_dict = loss(pred,gt,damage)
+            total_loss , loss_dict = loss(pred_lst,gt,damage)
 
             optimizer.zero_grad()
             total_loss.backward()
@@ -120,8 +124,10 @@ def main(config:OmegaConf):
             # 记录实验数据
             writer.add_scalar('Train/l1-loss',loss_dict['l1'].item(),global_cur_iter)
             writer.add_scalar('Train/msssim-loss',loss_dict['msssim'].item(),global_cur_iter)
+            writer.add_scalar('Train/color-loss',loss_dict['color'].item(),global_cur_iter)
+            writer.add_scalar('Train/texture-loss',loss_dict['texture'].item(),global_cur_iter)
             writer.add_scalar('Train/contrast-loss',loss_dict['contrast'].item(),global_cur_iter)
-            writer.add_scalar('Train/total_loss',loss_dict['total'].item(),global_cur_iter)
+            writer.add_scalar('Train/total-loss',loss_dict['dip'].item(),global_cur_iter)
 
             logger.info(f'Epoch:[{cur_ep}][{cur_iter}/{total_iters_per_ep_train}], Loss:[{total_loss.item():.3f}].')
 
@@ -144,29 +150,31 @@ def main(config:OmegaConf):
             with torch.no_grad():
                 for cur_iter,(damage,gt) in enumerate(val_dataloader):
 
-                    global_cur_iter = val_epoch_cnt * total_iters_per_ep_val + cur_iter
+                    global_cur_iter = val_epoch_cnt * total_iters_per_ep_val + cur_iter + 1
 
                     damage = damage.to(config.exp.device)
                     gt = gt.to(config.exp.device)
 
-                    pred,gate = net(damage)
+                    pred_lst,gate = net(damage)
 
                     # 损失计算 
-                    total_loss , loss_dict = loss(pred,gt,damage)
+                    total_loss , loss_dict = loss(pred_lst,gt,damage)
 
-                    logger.info(f'Evalation:[{cur_iter}/{total_iters_per_ep_val}], Loss:[{total_loss.item():.3f}].')
+                    logger.info(f'Evaluation:[{cur_iter}/{total_iters_per_ep_val}], Loss:[{total_loss.item():.3f}].')
 
-                    psnr = calc_psnr(pred,gt).item()
-                    ssim = calc_ssim(pred,gt).item()
+                    psnr = calc_psnr(pred_lst[-1],gt).item()
+                    ssim = calc_ssim(pred_lst[-1],gt).item()
                     psnr_lst.append(psnr)
                     ssim_lst.append(ssim)
                     loss_lst.append(total_loss.item())
 
                     # 记录实验数据
-                    writer.add_scalar('Train/l1-loss',loss_dict['l1'].item(),global_cur_iter)
-                    writer.add_scalar('Train/msssim-loss',loss_dict['msssim'].item(),global_cur_iter)
-                    writer.add_scalar('Train/contrast-loss',loss_dict['contrast'].item(),global_cur_iter)
-                    writer.add_scalar('Train/total_loss',loss_dict['total'].item(),global_cur_iter)
+                    writer.add_scalar('Eval/l1-loss',loss_dict['l1'].item(),global_cur_iter)
+                    writer.add_scalar('Eval/msssim-loss',loss_dict['msssim'].item(),global_cur_iter)
+                    writer.add_scalar('Eval/contrast-loss',loss_dict['contrast'].item(),global_cur_iter)
+                    writer.add_scalar('Eval/texture-loss',loss_dict['texture'].item(),global_cur_iter)
+                    writer.add_scalar('Eval/color-loss',loss_dict['color'].item(),global_cur_iter)
+                    writer.add_scalar('Eval/total-loss',loss_dict['dip'].item(),global_cur_iter)
                             
                     writer.add_scalar('Eval/psnr',psnr,global_cur_iter)
                     writer.add_scalar('Eval/ssim',ssim,global_cur_iter)
@@ -174,7 +182,6 @@ def main(config:OmegaConf):
                 val_epoch_cnt += 1
 
             logger.info(f'Evalation:[{cur_ep}], Mean Loss:[{np.mean(loss_lst):.3f}], PSNR:[{np.mean(psnr_lst):.3f}], SSIM:[{np.mean(ssim_lst):.3f}].')
-
 
             writer.add_image('grid/gt',
                 vutils.make_grid(gt, normalize=True, scale_each=True),
@@ -185,7 +192,7 @@ def main(config:OmegaConf):
                 cur_ep+1)
 
             writer.add_image('grid/pred',
-                vutils.make_grid(pred, normalize=True, scale_each=True),
+                vutils.make_grid(pred_lst[-1], normalize=True, scale_each=True),
                 cur_ep+1)
 
     writer.close()

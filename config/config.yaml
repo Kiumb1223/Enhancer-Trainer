@@ -2,45 +2,27 @@
 # 实验配置
 exp:
   seed: 3407
-  device: 'cuda:0'
-  exp_dir: './exps/new_data_loss_append_sigmoid_softmax_new_RESI'
+  device: 'cuda:7'
+  exp_dir: './exps/4/cdd'
   lr: 1e-4
   momentum: 0.937
   lr_decay: 5e-5
 
   gamma: 0.98
 
-  batch_size: 16
+  batch_size: 8
   num_workers: 8
 
   max_epoch: 60
   save_model_interval: 5 
   
-  val_epoch: 5 
-
-
-# --------------------------------
-# 数据集配置
-dataset:
-  # train_txt_path: 'datasets/train.txt'
-  # val_txt_path: 'datasets/val.txt'
-  train_dir: 'datasets/CDD-11_train'
-  val_dir: 'datasets/CDD-11_test'
-  modes: ['haze','low','low_haze']
-  input_shape: [384,384]
-
-
-# --------------------------------
-# 损失权重
-loss:
-  lam_l1: 1.
-  lam_msssim: 1.
-  lam_con: 1.
+  val_epoch: 1 
 
 # --------------------------------
 defaults:
   # 记录模型权重路径
   - enhancer: basic
+  - dataset: cdd
   # 让Hydra不切换工作目录
   - hydra: hydra
   - _self_ 

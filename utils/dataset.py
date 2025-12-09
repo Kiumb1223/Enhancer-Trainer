@@ -31,6 +31,7 @@ class VOCDataset(Dataset):
     def __init__(self,
             txt_path: str, # the directory of dataset 
             input_shape: list,
+            modes:list,
             phase:str= 'train',
             **kwargs
         ):
@@ -41,7 +42,9 @@ class VOCDataset(Dataset):
 
         with open(txt_path,'r') as f:
             self.data_lst = f.readlines()
-            
+        
+        self.modes = modes 
+
         logging.info(f'load {len(self.data_lst)} images from {txt_path}.')
 
         if phase == 'train':
@@ -83,7 +86,7 @@ class VOCDataset(Dataset):
         gt = cv2.cvtColor(gt,cv2.COLOR_BGR2RGB)
         gt = np.asarray(gt,dtype=np.uint8)
 
-        mode = random.choice(['dark','fog'])
+        mode = random.choice(self.modes)
         damaged_img_path = gt_path.replace('JPEGImages',mode)
 
         damaged = cv2.imread(damaged_img_path) 

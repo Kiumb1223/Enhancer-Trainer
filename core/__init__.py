@@ -8,10 +8,16 @@
 '''
 
 from .enhancer import * 
+from .loss import   *
+
 
 __all__ = [
-    'build_enhancer'
+    'build_enhancer',
+    'build_dip_loss'
 ]
 
 def build_enhancer(cfg_enhancer):
     return Enhancer(**cfg_enhancer)
+
+def build_dip_loss(cfg_loss):
+    return Criterion(**cfg_loss)
