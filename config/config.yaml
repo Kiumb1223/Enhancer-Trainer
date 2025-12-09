@@ -1,0 +1,28 @@
+# --------------------------------
+# 实验配置
+exp:
+  seed: 3407
+  device: 'cuda:1'
+  exp_dir: './exps/4/voc_fog'
+  lr: 1e-4
+  momentum: 0.937
+  lr_decay: 5e-5
+
+  gamma: 0.98
+
+  batch_size: 16
+  num_workers: 8
+
+  max_epoch: 60
+  save_model_interval: 5 
+  
+  val_epoch: 1 
+
+# --------------------------------
+defaults:
+  - dataset: voc
+  # 记录模型权重路径
+  - enhancer: basic
+  # 让Hydra不切换工作目录
+  - hydra: hydra
+  - _self_ 
