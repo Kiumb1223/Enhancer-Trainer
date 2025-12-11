@@ -2,7 +2,7 @@
 
 > It contains the custom trainer designed specifically for the **Image Enhancer**, which is the core of my project [CDIE-Trainer](https://github.com/Kiumb1223/CDIE-Trainer).
 
-![teaser fig](./../../My Work/Enhancer/.assets/teaser.png)
+![teaser fig](.assets/teaser.png)
 
 ## Update
 
