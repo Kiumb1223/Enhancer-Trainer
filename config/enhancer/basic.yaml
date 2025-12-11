@@ -1,0 +1,51 @@
+type: "multi"   # optional: [single,multi]   
+num_dip: 4      # at most 4
+ckpt_path: null # whether to load the pretrained weights
+
+encoder:
+  # options: 
+  # ['resnet50', 'resnet101','resnet152', 'resnext50_32x4d', 'resnext101_32x8d']
+  arch: 'resnet50' 
+  dip_type: ${enhancer.type}
+  output_dim_lst: [32,32,64,64] # must set 4 
+
+gdip:
+  filters: ['bezier','kernel']  # optional: [bezier kernel defog sharpen,identity]
+  output_dim_lst: ${enhancer.encoder.output_dim_lst}
+
+  gate:
+    filters: ${enhancer.gdip.filters} # used to calc the length of filters
+    bt_res_concat: True  # whether to use residual-only input as gate input
+
+  bezier:
+    L: 6
+    num_of_params: 12
+    encoder_output_dim: null
+
+  kernel:
+    kernel_size: 9          
+    encoder_output_dim: null
+
+  defog:
+    num_of_params: 1
+    use_guided_filter: True
+    value_range: [0.2,2.0]
+    encoder_output_dim: null
+
+  sharpen:
+    sigma: 5
+    kernel_size: 5
+    num_of_params: 1
+    value_range: [-0.3,3.]
+    encoder_output_dim: null
+
+loss:
+  bt_multi_dips: False # whether to calc all the dips
+  lam_l1: 1.
+  lam_msssim: 1
+  lam_color: 1
+  lam_per: 1
+  # for gate regularization
+  lam_gate_ent: 0.01
+  lam_gate_rgb: 0.01
+
