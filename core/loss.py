@@ -164,7 +164,6 @@ class Criterion(nn.Module):
             pred_lst:List[Tensor],
             gate_lst:List[Tensor],
             gt:Tensor,
-            damaged:Tensor
         ):
 
         smooth_loss_l1 = 0
